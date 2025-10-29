@@ -1,0 +1,85 @@
+# Name of your GitHub Actions workflow
+name: Deploy Static Site to GitHub Pages
+
+# 1. TRIGGER: When to run this workflow
+# This workflow runs on every 'push' event to the 'main' branch.
+on:
+  push:
+    branches:
+      - main # Or 'master' depending on your repo's default branch
+
+# 2. PERMISSIONS: Granting permissions for deployment
+# We need to give the GitHub Action 'token' permission to write to
+# GitHub Pages and manage the deployment.
+permissions:
+  contents: read
+  pages: write      # Required to deploy to Pages
+  id-token: write   # Required for authentication
+
+# 3. JOBS: The sequence of tasks to run
+jobs:
+
+  # JOB 1: "lint" (The Automated Quality Check)
+  # This job runs first to check the code quality.
+  lint:
+    name: Run JavaScript Linter
+    runs-on: ubuntu-latest # Use the latest available Linux runner
+    steps:
+      # Step 1.1: Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Step 1.2: Set up Node.js (which includes npm)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Use a modern version of Node
+
+      # Step 1.3: Install ESLint (and the HTML plugin)
+      # This reads the .eslintrc.json file for rules
+      - name: Install ESLint
+        # The `--location=global` allows npx to find the package easily
+        run: npm install eslint eslint-plugin-html
+
+      # Step 1.4: Run the linter
+      # This command checks all .js files (and JS inside .html)
+      # If the check fails (like with a missing semicolon), the job stops here.
+      - name: Run ESLint
+        run: npx eslint . --ext .js,.html
+
+  # JOB 2: "deploy" (The Deployment to GitHub Pages)
+  # This job only runs if the "lint" job succeeds.
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    
+    # This is the key: "needs: lint"
+    # This ensures deployment ONLY happens if the quality check passes.
+    needs: lint 
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # The URL of the deployed site
+
+    steps:
+      # Step 2.1: Check out the repository code
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      # Step 2.2: Configure GitHub Pages
+      # This action sets up the environment for deployment
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v4
+
+      # Step 2.3: Upload the static site files as an artifact
+      # This "packages" your site for deployment.
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.' # Upload the entire root directory
+
+      # Step 2.4: Deploy to GitHub Pages
+      # This action takes the uploaded artifact and publishes it.
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
