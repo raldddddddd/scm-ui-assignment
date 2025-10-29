@@ -20,7 +20,6 @@ permissions:
 jobs:
 
   # JOB 1: "lint" (The Automated Quality Check)
-  # This job runs first to check the code quality.
   lint:
     name: Run JavaScript Linter
     runs-on: ubuntu-latest # Use the latest available Linux runner
@@ -35,25 +34,22 @@ jobs:
         with:
           node-version: '20' # Use a modern version of Node
 
-      # Step 1.3: Install ESLint (and the HTML plugin)
-      # This reads the .eslintrc.json file for rules
-      - name: Install ESLint
-        # FIX: We now explicitly install ESLint v8 to support the existing .eslintrc.json config.
-        run: npm install eslint@8 eslint-plugin-html
+      # Step 1.3: Install ESLint using the package.json dependencies
+      - name: Install Dependencies
+        # 'npm ci' installs dependencies defined in your package.json (including eslint@8)
+        run: npm ci
 
-      # Step 1.4: Run the linter
-      # This command checks all .js files (and JS inside .html)
-      # If the check fails (like with a missing semicolon), the job stops here.
+      # Step 1.4: Run the linter using the defined 'lint' script
+      # This guarantees the use of the locally installed eslint@8 binary.
       - name: Run ESLint
-        run: npx eslint . --ext .js,.html
-
+        run: npm run lint
+        
   # JOB 2: "deploy" (The Deployment to GitHub Pages)
   # This job only runs if the "lint" job succeeds.
   deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
     
-    # This is the key: "needs: lint"
     # This ensures deployment ONLY happens if the quality check passes.
     needs: lint 
 
@@ -67,19 +63,16 @@ jobs:
         uses: actions/checkout@v4
 
       # Step 2.2: Configure GitHub Pages
-      # This action sets up the environment for deployment
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v4
 
       # Step 2.3: Upload the static site files as an artifact
-      # This "packages" your site for deployment.
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.' # Upload the entire root directory
 
       # Step 2.4: Deploy to GitHub Pages
-      # This action takes the uploaded artifact and publishes it.
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
