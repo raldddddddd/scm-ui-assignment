@@ -36,8 +36,10 @@ jobs:
 
       # Step 1.3: Install ESLint using the package.json dependencies
       - name: Install Dependencies
-        # 'npm ci' installs dependencies defined in your package.json (including eslint@8)
-        run: npm ci
+        # THIS IS THE FIX:
+        # 'npm install' reads package.json and installs the specified
+        # versions (like eslint@8) without needing a lockfile.
+        run: npm install
 
       # Step 1.4: Run the linter using the defined 'lint' script
       # This guarantees the use of the locally installed eslint@8 binary.
@@ -76,3 +78,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
