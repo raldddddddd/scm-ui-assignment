@@ -1,0 +1,12 @@
+{
+  "name": "scm-static-site",
+  "version": "1.0.0",
+  "description": "Configuration for SCM Assignment static site.",
+  "scripts": {
+    "lint": "npx eslint . --ext .js,.html"
+  },
+  "devDependencies": {
+    "eslint": "8",
+    "eslint-plugin-html": "*"
+  }
+}
