@@ -1,21 +1,16 @@
-# Name of your GitHub Actions workflow
 name: Deploy Static Site to GitHub Pages
 
-# 1. TRIGGER: When to run this workflow
 on:
   push:
     branches:
       - main
 
-# 2. PERMISSIONS: Granting permissions for deployment
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# 3. JOBS: The sequence of tasks to run
 jobs:
-  # JOB 1: "lint" (Code Quality Check)
   lint:
     name: Run JavaScript Linter
     runs-on: ubuntu-latest
@@ -34,8 +29,6 @@ jobs:
       - name: Run ESLint
         run: npm run lint
   
-  # JOB 2: "test" (Automated Testing with Jest)
-  # This job only runs if the "lint" job succeeds
   test:
     name: Run Jest Tests
     runs-on: ubuntu-latest
@@ -56,14 +49,12 @@ jobs:
         run: npm test
       
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage-report
           path: coverage/
   
-  # JOB 3: "deploy" (Deployment to GitHub Pages)
-  # This job only runs if BOTH "lint" AND "test" jobs succeed
   deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
