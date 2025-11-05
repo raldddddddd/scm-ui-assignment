@@ -140,13 +140,13 @@ describe('Accessibility Animations Module', () => {
 
   // FAILING TEST EXAMPLE (Intentionally fails to demonstrate test failure)
   // Comment out the test below after taking screenshot to allow deployment
-  describe('Failing Test Example', () => {
-    test('INTENTIONAL FAIL: particle count should be 100 (actually 50)', () => {
-      const stats = getAnimationStats();
-      // This will fail because particleCount is actually 50, not 100
-      expect(stats.particleCount).toBe(100);
-    });
-  });
+  // describe('Failing Test Example', () => {
+  //   test('INTENTIONAL FAIL: particle count should be 100 (actually 50)', () => {
+  //     const stats = getAnimationStats();
+  //     // This will fail because particleCount is actually 50, not 100
+  //     expect(stats.particleCount).toBe(100);
+  //   });
+  // });
 
   describe('Edge Cases', () => {
     test('should handle missing DOM elements gracefully', () => {
@@ -170,3 +170,4 @@ describe('Accessibility Animations Module', () => {
     });
   });
 });
+
