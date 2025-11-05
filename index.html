@@ -132,26 +132,11 @@
         });
       }
 
-      // --- JAVASCRIPT LINTER TEST ---
-      //
-      // The line of code below is INTENTIONALLY BROKEN.
-      // It is missing a semicolon at the end.
-      // The `.eslintrc.json` file requires semicolons ("semi": "error").
-      // This will cause the "lint" job in your GitHub Action to fail.
-      //
-      console.log("This line will fail the linter");
-      //
-      // --- TO FIX THE LINTER ---
-      //
-      // To make the "lint" job pass (and allow the "deploy" job to run),
-      // add a semicolon to the line above, like this:
-      //
-      // console.log("This line will fail the linter");
-      //
-      // Then, commit and push this change to your repository.
-      //
+      // FIXED: Added semicolon to pass linter
+      console.log("This line will now pass the linter");
     </script>
+
+    <!-- 4. Load the accessibility animations module -->
+    <script type="module" src="accessibility-animations.js"></script>
   </body>
 </html>
-
-
