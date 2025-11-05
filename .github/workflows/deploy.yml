@@ -2,80 +2,87 @@
 name: Deploy Static Site to GitHub Pages
 
 # 1. TRIGGER: When to run this workflow
-# This workflow runs on every 'push' event to the 'main' branch.
 on:
   push:
     branches:
-      - main # Or 'master' depending on your repo's default branch
+      - main
 
 # 2. PERMISSIONS: Granting permissions for deployment
-# We need to give the GitHub Action 'token' permission to write to
-# GitHub Pages and manage the deployment.
 permissions:
   contents: read
-  pages: write      # Required to deploy to Pages
-  id-token: write   # Required for authentication
+  pages: write
+  id-token: write
 
 # 3. JOBS: The sequence of tasks to run
 jobs:
-
-  # JOB 1: "lint" (The Automated Quality Check)
+  # JOB 1: "lint" (Code Quality Check)
   lint:
     name: Run JavaScript Linter
-    runs-on: ubuntu-latest # Use the latest available Linux runner
+    runs-on: ubuntu-latest
     steps:
-      # Step 1.1: Check out the repository code
       - name: Check out code
         uses: actions/checkout@v4
-
-      # Step 1.2: Set up Node.js (which includes npm)
+      
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Use a modern version of Node
-
-      # Step 1.3: Install ESLint using the package.json dependencies
+          node-version: '20'
+      
       - name: Install Dependencies
-        # THIS IS THE FIX:
-        # 'npm install' reads package.json and installs the specified
-        # versions (like eslint@8) without needing a lockfile.
         run: npm install
-
-      # Step 1.4: Run the linter using the defined 'lint' script
-      # This guarantees the use of the locally installed eslint@8 binary.
+      
       - name: Run ESLint
         run: npm run lint
-        
-  # JOB 2: "deploy" (The Deployment to GitHub Pages)
-  # This job only runs if the "lint" job succeeds.
+  
+  # JOB 2: "test" (Automated Testing with Jest)
+  # This job only runs if the "lint" job succeeds
+  test:
+    name: Run Jest Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install Dependencies
+        run: npm install
+      
+      - name: Run Tests
+        run: npm test
+      
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+  
+  # JOB 3: "deploy" (Deployment to GitHub Pages)
+  # This job only runs if BOTH "lint" AND "test" jobs succeed
   deploy:
     name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
-    
-    # This ensures deployment ONLY happens if the quality check passes.
-    needs: lint 
-
+    needs: [lint, test]
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }} # The URL of the deployed site
-
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      # Step 2.1: Check out the repository code
       - name: Check out code
         uses: actions/checkout@v4
-
-      # Step 2.2: Configure GitHub Pages
+      
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v4
-
-      # Step 2.3: Upload the static site files as an artifact
+      
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.' # Upload the entire root directory
-
-      # Step 2.4: Deploy to GitHub Pages
+          path: '.'
+      
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
